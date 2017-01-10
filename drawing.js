@@ -32,27 +32,28 @@ var tool = (function(){
       y: Math.floor(event.clientY - rect.top)};
   }
 
-  function line(ctx, mouseCurr, mousePrev){
+  function line(ctx, event){
     ctx.lineWidth = 5;
-    ctx.lineCap = "round";
 
+    mouse.curr.x = event.layerX;
+    mouse.curr.y = event.layerY;
 
     ctx.beginPath();
-    ctx.moveTo(mousePrev.x, mousePrev.y);
-    ctx.lineTo(mouseCurr.x, mouseCurr.y);
-    mousePrev.x = mouseCurr.x;
-    mousePrev.y = mouseCurr.y;
+    ctx.moveTo(mouse.prev.x, mouse.prev.y);
+    ctx.lineTo(mouse.curr.x, mouse.curr.y);
+    mouse.prev.x = mouse.curr.x;
+    mouse.prev.y = mouse.curr.y;
     ctx.stroke();
   }
 
 
-  function draw(ctx, mouseCurr, mousePrev){
+  function draw(ctx, event){
     switch(this.type){
       case "line":
         line(ctx,event);
       break;
       default:
-        line(ctx, mouseCurr, mousePrev);
+        line(ctx, event);
       break;
     }
   }
@@ -100,9 +101,7 @@ var mouse = {
         ctx.canvas.removeEventListener("mousemove", mouseMoveEv);
       }
       else{
-        mouse.curr.x = event.layerX;
-        mouse.curr.y = event.layerY;
-        tool.draw(ctx, mouse.curr, mouse.prev);
+        tool.draw(ctx, event);
       }
     }
 
