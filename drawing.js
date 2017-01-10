@@ -22,41 +22,37 @@ var canvas = (function(){
   return {draw: draw}
 })();
 
+
 var tool = (function(){
   var paths = [];
 
-  function multiRay(ctx, event){
-    var x = event.layerX;
-    var y = event.layerY;
-
-    var paths = [];
-
-    paths.push({x: x, y: y})
-
-    console.log(paths);
+  function relativePos(event, el){
+    var rect = el.getBoundingClientRect();
+    return {x: Math.floor(event.clientX - rect.left),
+      y: Math.floor(event.clientY - rect.top)};
   }
 
-  function line(ctx,event){
-    var x = event.layerX;
-    var y = event.layerY;
+  function line(ctx, mouseCurr, mousePrev){
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+
 
     ctx.beginPath();
-    ctx.arc(x, y, 10, 0, 2 * Math.PI);
-    ctx.fill();
+    ctx.moveTo(mousePrev.x, mousePrev.y);
+    ctx.lineTo(mouseCurr.x, mouseCurr.y);
+    mousePrev.x = mouseCurr.x;
+    mousePrev.y = mouseCurr.y;
     ctx.stroke();
   }
 
 
-  function draw(ctx, event){
+  function draw(ctx, mouseCurr, mousePrev){
     switch(this.type){
       case "line":
         line(ctx,event);
       break;
-      case "ray":
-        multiRay(ctx,event);
-      break;
       default:
-        line(ctx,event);
+        line(ctx, mouseCurr, mousePrev);
       break;
     }
   }
@@ -69,8 +65,13 @@ var tool = (function(){
 
 
 
-(function(){
+var mouse = {
+  prev: {x: 0, y: 0},
+  curr: {x: 0, y: 0}
+};
 
+
+(function(){
   canvas.draw(function(ctx){
     var strokeCP = document.querySelector('#stroke');
     var fillCP = document.querySelector('#fill');
@@ -88,6 +89,8 @@ var tool = (function(){
 
     function mouseDownEv(event){
       if(event.which == 1){
+        mouse.prev.x = event.layerX;
+        mouse.prev.y = event.layerY;
         ctx.canvas.addEventListener("mousemove", mouseMoveEv);
       }
     }
@@ -97,7 +100,9 @@ var tool = (function(){
         ctx.canvas.removeEventListener("mousemove", mouseMoveEv);
       }
       else{
-        tool.draw(ctx, event);
+        mouse.curr.x = event.layerX;
+        mouse.curr.y = event.layerY;
+        tool.draw(ctx, mouse.curr, mouse.prev);
       }
     }
 
