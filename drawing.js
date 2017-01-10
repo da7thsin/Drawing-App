@@ -24,7 +24,6 @@ var canvas = (function(){
 
 
 var tool = (function(){
-  var paths = [];
 
   function relativePos(event, el){
     var rect = el.getBoundingClientRect();
@@ -33,8 +32,6 @@ var tool = (function(){
   }
 
   function line(ctx, event){
-    ctx.lineWidth = 5;
-
     mouse.curr.x = event.layerX;
     mouse.curr.y = event.layerY;
 
@@ -74,18 +71,15 @@ var mouse = {
 
 (function(){
   canvas.draw(function(ctx){
-    var strokeCP = document.querySelector('#stroke');
-    var fillCP = document.querySelector('#fill');
+    var strokeCP = document.querySelector('input[type=color]');
+
+    ctx.lineJoin = ctx.lineCap = "round";
+    ctx.lineWidth = 5;
 
     ctx.strokeStyle = strokeCP.value;
-    ctx.fillStyle = fillCP.value;
 
     strokeCP.onchange = function(){
       ctx.strokeStyle = strokeCP.value;
-    }
-
-    fillCP.onchange = function(){
-      ctx.fillStyle = fillCP.value;
     }
 
     function mouseDownEv(event){
