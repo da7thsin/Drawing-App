@@ -1,1 +1,5 @@
-alert('working');
+var canvas = (function(){
+
+});
+
+console.log(canvas);
