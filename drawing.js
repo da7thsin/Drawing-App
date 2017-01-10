@@ -2,10 +2,11 @@ var canvas = (function(){
   var canvas = document.querySelector('canvas');
   var ctx = canvas.getContext('2d');
 
-  ctx.canvas.width = 800;
-  ctx.canvas.height = 600;
+  var width = ctx.canvas.width = 800;
+  var height = ctx.canvas.height = 600;
 
   function draw(callback){
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     callback(ctx);
   }
 
