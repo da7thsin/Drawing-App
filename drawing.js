@@ -1,9 +1,10 @@
 var canvas = (function(){
+  var sketchDiv = document.querySelector('.sketch');
   var canvas = document.querySelector('canvas');
   var ctx = canvas.getContext('2d');
 
   var width = ctx.canvas.width = 800;
-  var height = ctx.canvas.height = 400;
+  var height = ctx.canvas.height = 600;
 
   function draw(callback){
     ctx.clearRect(0, 0, width, height);
@@ -27,28 +28,42 @@ var canvas = (function(){
 })();
 
 
-canvas.draw(function(ctx){
-  ctx.arc(50, 50, 100, 0, Math.PI);
-  function mouseDownEv(event){
-    if(event.which == 1){
-      ctx.canvas.addEventListener("mousemove", mouseMoveEv);
-    }
+var tools = (function(){
+  function changeColor(){
+
   }
 
-  function mouseMoveEv(event){
-    var x = event.layerX;
-    var y = event.layerY;
-
-    if(event.buttons == 0 || event.which == 0){
-      ctx.canvas.removeEventListener("mousemove", mouseMoveEv);
-    }
-    else{
-      console.log(x , y);
-      ctx.beginPath();
-      ctx.arc(x, y, 10, 0, 2 * Math.PI);
-      ctx.fill();
-    }
+  return {
+    changeColor: changeColor
   }
+})();
 
-  ctx.canvas.addEventListener("mousedown", mouseDownEv);
-});
+
+
+
+var init = (function(){
+
+  canvas.draw(function(ctx){
+    function mouseDownEv(event){
+      if(event.which == 1){
+        ctx.canvas.addEventListener("mousemove", mouseMoveEv);
+      }
+    }
+
+    function mouseMoveEv(event){
+      var x = event.layerX;
+      var y = event.layerY;
+
+      if(event.buttons == 0 || event.which == 0){
+        ctx.canvas.removeEventListener("mousemove", mouseMoveEv);
+      }
+      else{
+        ctx.beginPath();
+        ctx.arc(x, y, 50, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+
+    ctx.canvas.addEventListener("mousedown", mouseDownEv);
+  });
+})();
