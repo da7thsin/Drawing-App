@@ -10,68 +10,85 @@ var canvas = (function(){
     callback(ctx);
   }
 
-  function getCanvasDim(){
-    return {width: ctx.canvas.width, height: ctx.canvas.height};
-  }
-
-  function setCanvasDim(width, height){
-    ctx.canvas.width = width;
-    ctx.canvas.height = height;
-  }
-
-  return {draw: draw}
-})();
-
-
-var tool = (function(){
-
-  function relativePos(event, el){
-    var rect = el.getBoundingClientRect();
-    return {x: Math.floor(event.clientX - rect.left),
-      y: Math.floor(event.clientY - rect.top)};
-  }
-
-  function line(ctx, event){
-    mouse.curr.x = event.layerX;
-    mouse.curr.y = event.layerY;
-
-    ctx.beginPath();
-    ctx.moveTo(mouse.prev.x, mouse.prev.y);
-    ctx.lineTo(mouse.curr.x, mouse.curr.y);
-    mouse.prev.x = mouse.curr.x;
-    mouse.prev.y = mouse.curr.y;
-    ctx.stroke();
-  }
-
-
-  function draw(ctx, event){
-    switch(this.type){
-      case "line":
-        line(ctx,event);
-      break;
-      default:
-        line(ctx, event);
-      break;
-    }
+  function getDimension(){
+    return {x: width, y: height};
   }
 
   return {
-    type: null,
-    draw: draw
+    draw: draw,
+    getDim: getDimension
   }
 })();
 
 
 
-var mouse = {
-  prev: {x: 0, y: 0},
-  curr: {x: 0, y: 0}
-};
+function MirrorPoint(x, y){
+  this.x = x;
+  this.y = y;
+
+  this.drawMirrored = function(ctx, paths){
+    var start = paths[0];
+
+    ctx.moveTo(start.x, start.y);
+
+    ctx.beginPath();
+    for(var i = 1; i < paths.length; i++){
+      var end = paths[i];
+
+      if(start.x > this.x && start.y > this.y){
+        start.x = -start.x;
+        start.y = -start.y;
+        ctx.lineTo(this.x - (end.x - this.x), this.y - (end.y - this.y));
+      }
+
+      if(start.x < this.x && start.y < this.y){
+        start.x = Math.abs(start.x);
+        start.y = Math.abs(start.y);
+        ctx.lineTo(this.x + (this.x - end.x), this.y - (this.y - end.y));
+      }
+    }
+
+    ctx.stroke();
+  }
+}
+
+
+function mirrorLine(ctx, posX, posY, start, end){
+  var points = [];
+  ctx.moveTo(posX, posY);
+
+  for(let newY = start; newY < end; newY++){
+    points.push(new MirrorPoint(posX, newY));
+    ctx.lineTo(posX, newY);
+    ctx.moveTo(posX, newY);
+    ctx.stroke();
+  }
+
+  return points;
+}
+
+
+function drawLine(ctx, paths, mirrorPoints){
+  ctx.beginPath();
+  ctx.moveTo(paths[0].x, paths[0].y);
+
+  for(var i = 1; i < paths.length; i++){
+    ctx.lineTo(paths[i].x, paths[i].y);
+  }
+
+  ctx.stroke();
+}
 
 
 (function(){
+  var paths = [];
+
+
   canvas.draw(function(ctx){
     var strokeCP = document.querySelector('input[type=color]');
+    var dimension = canvas.getDim();
+
+    var mirrorPoints = mirrorLine(ctx, dimension.x/2, 0, 0, dimension.y);
 
     ctx.lineJoin = ctx.lineCap = "round";
     ctx.lineWidth = 5;
@@ -84,10 +101,13 @@ var mouse = {
 
     function mouseDownEv(event){
       if(event.which == 1){
-        mouse.prev.x = event.layerX;
-        mouse.prev.y = event.layerY;
+        paths.push({x: event.layerX, y: event.layerY});
         ctx.canvas.addEventListener("mousemove", mouseMoveEv);
       }
+    }
+
+    function mouseUpEv(){
+      paths = [];
     }
 
     function mouseMoveEv(event){
@@ -95,10 +115,17 @@ var mouse = {
         ctx.canvas.removeEventListener("mousemove", mouseMoveEv);
       }
       else{
-        tool.draw(ctx, event);
+        paths.push({x: event.layerX, y: event.layerY});
+        drawLine(ctx, paths);
+
+        mirrorPoints.forEach(function(point){
+          point.drawMirrored(ctx, paths);
+        });
       }
     }
 
+
+    ctx.canvas.addEventListener("mouseup", mouseUpEv);
     ctx.canvas.addEventListener("mousedown", mouseDownEv);
   });
 })();
