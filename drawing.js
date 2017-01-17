@@ -29,21 +29,23 @@ function MirrorPoint(x, y){
   this.drawMirrored = function(ctx, paths){
     var start = paths[0];
 
-    ctx.moveTo(start.x, start.y);
+    if(start.x > this.x && start.y > this.y){
+      ctx.moveTo(start.x, start.y);
+    }
+
+    if(start.x < this.x && start.y < this.y){
+      ctx.moveTo(-start.x, -start.y);
+    }
 
     ctx.beginPath();
     for(var i = 1; i < paths.length; i++){
       var end = paths[i];
 
       if(start.x > this.x && start.y > this.y){
-        start.x = -start.x;
-        start.y = -start.y;
-        ctx.lineTo(this.x - (end.x - this.x), this.y - (end.y - this.y));
+        ctx.lineTo(this.x - (end.x - this.x), this.y + (end.y - this.y));
       }
 
       if(start.x < this.x && start.y < this.y){
-        start.x = Math.abs(start.x);
-        start.y = Math.abs(start.y);
         ctx.lineTo(this.x + (this.x - end.x), this.y - (this.y - end.y));
       }
     }
